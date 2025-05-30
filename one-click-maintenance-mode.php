@@ -29,10 +29,11 @@ class One_Click_Maintenance_Mode {
         add_action('wp_ajax_ocmm_toggle_maintenance', array($this, 'ajax_toggle_maintenance'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
-    
+
     public function register_settings() {
         register_setting('ocmm_settings', 'ocmm_enabled');
         register_setting('ocmm_settings', 'ocmm_message');
+        register_setting('ocmm_settings', 'ocmm_sub_message');
         register_setting('ocmm_settings', 'ocmm_logo');
     }
     
@@ -49,6 +50,7 @@ class One_Click_Maintenance_Mode {
     public function render_settings_page() {
         $enabled = get_option('ocmm_enabled', false);
         $message = get_option('ocmm_message', 'We\'ll be back soon!');
+        $sub_message = get_option('ocmm_sub_message', '');
         $logo = get_option('ocmm_logo', '');
         ?>
         <div class="wrap">
@@ -69,6 +71,12 @@ class One_Click_Maintenance_Mode {
                         <th>Maintenance Message</th>
                         <td>
                             <textarea name="ocmm_message" rows="3" cols="50"><?php echo esc_textarea($message); ?></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Sub Message</th>
+                        <td>
+                            <textarea name="ocmm_sub_message" rows="2" cols="50"><?php echo esc_textarea($sub_message); ?></textarea>
                         </td>
                     </tr>
                     <tr>
@@ -139,6 +147,7 @@ class One_Click_Maintenance_Mode {
     public function check_maintenance_mode() {
         if (get_option('ocmm_enabled', false) && !is_user_logged_in()) {
             $message = get_option('ocmm_message', 'We\'ll be back soon!');
+            $sub_message = get_option('ocmm_sub_message', '');
             $logo = get_option('ocmm_logo', '');
             
             status_header(503);
@@ -176,12 +185,17 @@ class One_Click_Maintenance_Mode {
                         font-weight: bold;
                         font-size: 18px;
                     }
+                    .sub-message {
+                        font-size: 14px;
+                        margin-top: 10px;
+                    }
                 </style>
             </head>
             <body>
                 <div class="maintenance-box">
                     ' . ($logo ? '<img src="' . esc_url($logo) . '" alt="Logo" class="logo">' : '') . '
                     <div class="message">' . wp_kses_post($message) . '</div>
+                    ' . ($sub_message ? '<div class="sub-message">' . wp_kses_post($sub_message) . '</div>' : '') . '
                 </div>
             </body>
             </html>';
